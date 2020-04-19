@@ -26,23 +26,23 @@ export default {
           value: 'Three'
         }
       ]
+    },
+    {
+      value: 'india',
+      tags: [
+        {
+          id: 1,
+          value: 'One'
+        },
+        {
+          id: 3,
+          value: 'Three'
+        }
+      ]
+    },
+    {
+      value: 'pakistan',
+      tags: []
     }
-    // {
-    //   value: 'india',
-    //   tags: [
-    //     {
-    //       id: 1,
-    //       value: 'One'
-    //     },
-    //     {
-    //       id: 3,
-    //       value: 'Three'
-    //     }
-    //   ]
-    // },
-    // {
-    //   value: 'pakistan',
-    //   tags: []
-    // }
   ]
 }

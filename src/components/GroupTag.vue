@@ -1,16 +1,40 @@
 <template>
-  <div class="top-container">
-    <div class="tag-flex-container">
-        <tag v-for="tag in tags" :key="tag.id" @removeTag="removeTag" :tag="tag"></tag>
-        <span class="tag-input-container">
-            <input placeholder="Add tag" ref="tagInput" v-model="newTag" @keydown.enter.stop.prevent="pushTag(newTag)" @keydown="handleKeydown" type="text" size="1" class="tag-input">
-            <span :class="['dropdown-arrow',{rotate180:isTagOptionsVisible}]" @click="toggleTagOptions">&#9660;</span>
-        </span>
+<div class="margin-bottom-8">
+ <div class="top-container row">
+   <div class="col-5 padding-right-8">
+      <div class="tag-value-container">
+        <label class="font-size-11 margin-bottom-0">Value</label>
+        <input ref="valueInput" type="text" :value="inputTagValue" @input="tagValueChanged" >
+      </div>
+   </div>
+    <div class="col-5 padding-left-8 padding-right-8">
+          <label class="font-size-11 margin-bottom-0">Tags</label>
+          <div class="tag-flex-container">
+            <tag v-for="tag in tags" :key="tag.id" @removeTag="removeTag" :tag="tag"></tag>
+            <span class="tag-input-container">
+                <input placeholder="Add tag" ref="tagInput" v-model="newTag" @keydown.enter.stop.prevent="pushTag(newTag)" @keydown="handleKeydown" type="text" size="1" class="tag-input">
+                <span :class="['dropdown-arrow',{rotate180:isTagOptionsVisible}]" @click="toggleTagOptions">&#9660;</span>
+            </span>
+      </div>
     </div>
-    <ul class="tag-options" v-if="isTagOptionsVisible">
-      <li v-for="tag in filteredTagOptions" @click="pushTag(tag.value)" :key="tag.id">{{tag.value}}</li>
-    </ul>
+    <div class="col-2 btn-container">
+          <button class="tags-update-btn" @click="addNewTagComponent">+</button>
+          <button class="tags-update-btn" @click="deleteTagComponent">D</button>
+    </div>
   </div>
+  <div class="row">
+    <div class="col-5 padding-right-8">
+
+    </div>
+    <div class="col-5 padding-left-8">
+      <ul class="tag-options" v-if="isTagOptionsVisible">
+          <li v-for="tag in filteredTagOptions" @click="pushTag(tag.value)" :key="tag.id">{{tag.value}}</li>
+      </ul>
+    </div>
+    <div class="col-2">
+    </div>
+  </div>
+</div>
 </template>
 
 <script>
@@ -18,6 +42,10 @@ import Tag from './Tag'
 
 export default {
   props: {
+    tagValue: {
+      type: String,
+      default: null
+    },
     tagOptions: {
       type: Array,
       default: () => []
@@ -29,6 +57,9 @@ export default {
     tagsObj: {
       type: Object,
       required: true
+    },
+    tagIndex: {
+      type: Number
     }
   },
   components: {
@@ -37,11 +68,20 @@ export default {
   data () {
     return {
       newTag: '',
+      inputTagValue: '',
       filteredTagOptions: [],
       isTagOptionsVisible: false
     }
   },
   computed: {
+    // computedTagValue: {
+    //   get () {
+    //     return this.tagValue
+    //   },
+    //   set (newVal) {
+    //     this.$emit('valueChanged', newVal)
+    //   }
+    // },
     tags: {
       get () {
         return this.value
@@ -54,6 +94,11 @@ export default {
   watch: {
     value (newVal) {
       this.tags = this.value
+    },
+    inputTagValue (newVal) {
+      this.$emit('valueChanged', newVal)
+      console.log(newVal)
+      console.log(this.$refs)
     },
     newTag (newVal) {
       if (newVal === '') {
@@ -75,12 +120,29 @@ export default {
     window.addEventListener('click', this.close)
   },
   mounted () {
+    this.inputTagValue = this.tagValue
     this.filteredTagOptions = this.tagOptions
   },
   beforeDestroy () {
     window.removeEventListener('click', this.close)
   },
   methods: {
+    tagValueChanged (e) {
+      this.$emit('valueChanged', e.target.value)
+      this.$refs.valueInput.focus()
+    },
+    addNewTagComponent () {
+      const newTagValue = {
+        value: '',
+        tags: []
+      }
+      const index = this.tagsObj.values.map(value => value.value).indexOf(this.tagValue)
+      this.tagsObj.values.splice(index + 1, 0, newTagValue)
+    },
+    deleteTagComponent () {
+      const index = this.tagsObj.values.map(value => value.value).indexOf(this.tagValue)
+      this.tagsObj.values.splice(index, 1)
+    },
     updateTagOptions () {
       const tagOptions = []
       this.tagsObj.values.forEach(value => {
@@ -153,6 +215,40 @@ export default {
 </script>
 
 <style scoped>
+.btn-container {
+  padding-left: 0px;
+  padding-top: 22px;
+}
+.padding-left-0 {
+  padding-left: 0;
+}
+
+.margin-bottom-0 {
+  margin-bottom: 0px;
+}
+
+.padding-right-8 {
+  padding-right: 8px;
+}
+
+.padding-left-8 {
+  padding-left: 8px;
+}
+
+.font-size-11 {
+  font-size: 11px;
+}
+
+.margin-bottom-8 {
+  margin-bottom: 8px;
+}
+.tag-value-container > input {
+    height: 24px;
+    border: 1px solid #8b9396;
+    width: 100%;
+    font-size: 12px;
+}
+
 .border-bottom {
     border-bottom: 1px solid black;
 }
@@ -163,7 +259,7 @@ export default {
 }
 .tag-flex-container {
     display: flex;
-    height: 24px;
+    min-height: 24px;
     padding-left: 8px;
     flex-wrap: wrap;
     border: 1px solid #8b9396;
@@ -192,30 +288,32 @@ export default {
 }
 
 .dropdown-arrow {
-    padding-top: 2px;
-    font-size: 12px;
+    padding-top: 4px;
+    font-size: 10px;
     margin-right: 4px;
     cursor: pointer;
 }
 
 .rotate180 {
     transform: rotate(-180deg);
-    padding-top: 4px;
+    padding-top: 5px;
 }
 
 .tags-update-btn {
-    height: 20px;
+    height: 16px;
     border: none;
     cursor: pointer;
-    font-size: 11px;
-    margin-left: 2px;
+    font-size: 10px;
+    margin-left: 4px;
+    margin-right: 4px;
     margin-top: 4px;
+    margin-bottom: 4px;
 
 }
 
 .tag-options {
-  position: relative;
-  z-index: 2;
+  max-height: 120px;
+  overflow: auto;
   list-style: none;
   text-align: left;
   padding-left: 8px;

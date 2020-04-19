@@ -1,6 +1,13 @@
 <template>
   <div>
-    <group-tag v-for="value in fakeBackendObject.values" :key="value.value"  v-model="value.tags" :tagOptions="tagOptions" :tagsObj="fakeBackendObject"></group-tag>
+    <div class="row">
+      <div class="col">
+          <group-tag v-for="(value, index) in fakeBackendObject.values" :key="value.value" :tagIndex="index" v-model="value.tags" :tagOptions="tagOptions" :tagValue="value.value" :tagsObj="fakeBackendObject" @valueChanged="fakeBackendObject.values[index].value = $event"></group-tag>
+      </div>
+      <div class="col">
+        <pre>{{fakeBackendObject}}</pre>
+      </div>
+    </div>
   </div>
 </template>
 
