@@ -4,7 +4,7 @@
    <div class="col-5 padding-right-8">
       <div class="tag-value-container">
         <label class="font-size-11 margin-bottom-0">Value</label>
-        <input ref="valueInput" type="text" :value="inputTagValue" @input="tagValueChanged" >
+        <input ref="valueInput" @blur="updateChanges" type="text" v-model="inputTagValue">
       </div>
    </div>
     <div class="col-5 padding-left-8 padding-right-8">
@@ -74,14 +74,6 @@ export default {
     }
   },
   computed: {
-    // computedTagValue: {
-    //   get () {
-    //     return this.tagValue
-    //   },
-    //   set (newVal) {
-    //     this.$emit('valueChanged', newVal)
-    //   }
-    // },
     tags: {
       get () {
         return this.value
@@ -94,11 +86,6 @@ export default {
   watch: {
     value (newVal) {
       this.tags = this.value
-    },
-    inputTagValue (newVal) {
-      this.$emit('valueChanged', newVal)
-      console.log(newVal)
-      console.log(this.$refs)
     },
     newTag (newVal) {
       if (newVal === '') {
@@ -127,6 +114,9 @@ export default {
     window.removeEventListener('click', this.close)
   },
   methods: {
+    updateChanges () {
+      this.$emit('valueChanged', this.inputTagValue)
+    },
     tagValueChanged (e) {
       this.$emit('valueChanged', e.target.value)
       this.$refs.valueInput.focus()
@@ -155,7 +145,7 @@ export default {
       })
 
       this.tagOptions.forEach((tag, index) => {
-        if (tagOptions.map(t => t.value).indexOf(tag.value) === -1) {
+        if (tag.id === null && tagOptions.map(t => t.value).indexOf(tag.value) === -1) {
           this.tagOptions.splice(index, 1)
         }
       })
@@ -192,6 +182,8 @@ export default {
     removeTag (tag) {
       const index = this.tags.map(tag => tag.value).indexOf(tag.value)
       this.tags.splice(index, 1)
+      this.updateTagOptions()
+      console.log(this.tagOptions)
     },
     removeLastTag () {
       if (this.newTag === '') {
