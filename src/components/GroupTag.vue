@@ -3,12 +3,12 @@
  <div class="top-container row">
    <div class="col-5 padding-right-8">
       <div class="tag-value-container">
-        <label class="font-size-11 margin-bottom-0">Value</label>
+        <label class="font-size-11 margin-bottom-0" v-if="tagIndex === 0">Value</label>
         <input ref="valueInput" @blur="updateChanges" type="text" v-model="inputTagValue">
       </div>
    </div>
     <div class="col-5 padding-left-8 padding-right-8">
-          <label class="font-size-11 margin-bottom-0">Tags</label>
+          <label class="font-size-11 margin-bottom-0" v-if="tagIndex === 0">Tags</label>
           <div class="tag-flex-container">
             <tag v-for="tag in tags" :key="tag.id" @removeTag="removeTag" :tag="tag"></tag>
             <span class="tag-input-container">
@@ -17,7 +17,7 @@
             </span>
       </div>
     </div>
-    <div class="col-2 btn-container">
+    <div :class="['col-2, btn-container',{'padding-top-24': tagIndex === 0} ]">
           <button class="tags-update-btn" @click="addNewTagComponent">+</button>
           <button class="tags-update-btn" @click="deleteTagComponent">D</button>
     </div>
@@ -26,7 +26,7 @@
     <div class="col-5 padding-right-8">
 
     </div>
-    <div class="col-5 padding-left-8">
+    <div class="col-5 padding-left-8 padding-right-8">
       <ul class="tag-options" v-if="isTagOptionsVisible">
           <li v-for="tag in filteredTagOptions" @click="pushTag(tag.value)" :key="tag.id">{{tag.value}}</li>
       </ul>
@@ -89,17 +89,21 @@ export default {
     },
     newTag (newVal) {
       if (newVal === '') {
+        this.isTagOptionsVisible = false
         this.filteredTagOptions = this.tagOptions
       } else if (this.tagOptions != null) {
         const filterOptions = []
         this.tagOptions.forEach(tag => {
-          var patt = new RegExp(newVal)
+          var patt = new RegExp(newVal, 'i')
           var res = patt.test(tag.value)
           if (res) {
             filterOptions.push(tag)
           }
         })
         this.filteredTagOptions = filterOptions
+        if (this.filteredTagOptions.length !== 0) {
+          this.isTagOptionsVisible = true
+        }
       }
     }
   },
@@ -162,7 +166,10 @@ export default {
       if (newTag === '') {
         return
       }
-      if (this.tags.map(tag => tag.value).indexOf(newTag) === -1) {
+
+      newTag = newTag[0].toUpperCase() + newTag.slice(1)
+
+      if (this.tags.map(tag => tag.value.toLowerCase()).indexOf(newTag.toLowerCase()) === -1) {
         const newTagObj = {
           id: null,
           value: newTag
@@ -170,11 +177,14 @@ export default {
         if (this.tagOptions === null) {
           this.tagOptions = []
         }
-        if (this.tagOptions.map(tag => tag.value).indexOf(newTag) === -1) {
+        const indexOfTag = this.tagOptions.map(tag => tag.value).indexOf(newTag)
+        if (indexOfTag === -1) {
           this.tagOptions.push(newTagObj)
           this.filteredTagOptions = this.tagOptions
+          this.tags.push(newTagObj)
+        } else {
+          this.tags.push(this.tagOptions[indexOfTag])
         }
-        this.tags.push(newTagObj)
         this.newTag = ''
       }
       this.$refs.tagInput.focus()
@@ -206,9 +216,11 @@ export default {
 </script>
 
 <style scoped>
+.padding-top-24 {
+  padding-top: 24px;
+}
 .btn-container {
   padding-left: 0px;
-  padding-top: 22px;
 }
 .padding-left-0 {
   padding-left: 0;
