@@ -183,7 +183,6 @@ export default {
       const index = this.tags.map(tag => tag.value).indexOf(tag.value)
       this.tags.splice(index, 1)
       this.updateTagOptions()
-      console.log(this.tagOptions)
     },
     removeLastTag () {
       if (this.newTag === '') {
